@@ -1,33 +1,296 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Gold Calc</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gold Calc</title>
+  <style>
+    body{font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:16px; line-height:1.35;}
+    .row{margin:12px 0;}
+    label{display:block; font-weight:600; margin-bottom:6px;}
+    input, select{width:100%; padding:12px; font-size:18px; box-sizing:border-box;}
+    .grid{display:grid; gap:12px;}
+    .card{border:1px solid #ddd; border-radius:12px; padding:12px;}
+    .title{font-size:22px; font-weight:800; margin:0 0 8px;}
+    .muted{color:#666; font-size:14px;}
+    .result{font-size:22px; font-weight:900; margin-top:8px;}
+    .small{font-size:14px;}
+    .split{display:flex; gap:10px; align-items:center;}
+    .split > *{flex:1;}
+    button{padding:12px 14px; font-size:18px; width:100%; border-radius:12px; border:1px solid #111; background:#111; color:#fff;}
+  </style>
 </head>
-
 <body>
 
-<h1>Gold Calculator</h1>
+  <div class="split">
+    <div>
+      <div class="title" id="appTitle">Gold Calculator</div>
+      <div class="muted" id="appSub">Simple, fast, no mistakes</div>
+    </div>
+    <div>
+      <label class="small" id="langLabel">Language</label>
+      <select id="lang">
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+      </select>
+    </div>
+  </div>
 
-<label>Gold price (GHS / g)</label><br>
-<input id="price" type="number"><br><br>
+  <div class="row">
+    <label id="modeLabel">Mode</label>
+    <select id="mode">
+      <option value="straight">Straight (Price × Weight)</option>
+      <option value="reverse">Reverse (Target Profit)</option>
+    </select>
+    <div class="muted small" id="modeHint">Choose how you want to calculate.</div>
+  </div>
 
-<label>Weight (g)</label><br>
-<input id="weight" type="number"><br><br>
+  <div class="grid">
+    <div class="card">
+      <div class="title" id="inputsTitle">Inputs</div>
 
-<button onclick="calc()">Calculate</button>
+      <div class="row" id="rowPrice">
+        <label id="priceLabel">Gold price (GHS / g)</label>
+        <input id="price" type="number" inputmode="decimal" placeholder="e.g. 1000" />
+      </div>
 
-<h2 id="result"></h2>
+      <div class="row">
+        <label id="weightLabel">Weight (g)</label>
+        <input id="weight" type="number" inputmode="decimal" placeholder="e.g. 7.8" />
+      </div>
+
+      <div class="row" id="rowSell">
+        <label id="sellLabel">Sell price (GHS / g)</label>
+        <input id="sell" type="number" inputmode="decimal" placeholder="(optional) e.g. 1200" />
+        <div class="muted small" id="sellHint">If you enter this, profit will also be shown.</div>
+      </div>
+
+      <div class="row" id="rowProfitTarget" style="display:none;">
+        <label id="profitTargetLabel">Target profit (GHS)</label>
+        <input id="profitTarget" type="number" inputmode="decimal" placeholder="e.g. 8000000" />
+      </div>
+
+      <div class="row">
+        <label id="otherCostLabel">Other costs (GHS)</label>
+        <input id="otherCost" type="number" inputmode="decimal" placeholder="e.g. shipping, treatment, etc." />
+        <div class="muted small" id="otherCostHint">Put 0 if none.</div>
+      </div>
+
+      <button id="calcBtn" type="button">Calculate</button>
+      <div class="muted small" id="autoHint">Tip: You can also just type; it will update.</div>
+    </div>
+
+    <div class="card">
+      <div class="title" id="resultsTitle">Results</div>
+
+      <div class="result" id="totalCostLine">Total cost: -</div>
+      <div class="muted" id="detail1">-</div>
+      <div class="muted" id="detail2">-</div>
+
+      <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
+
+      <div class="result" id="profitLine">Profit: -</div>
+      <div class="muted" id="detail3">-</div>
+      <div class="muted" id="detail4">-</div>
+    </div>
+  </div>
 
 <script>
-function calc(){
-  let price = document.getElementById("price").value;
-  let weight = document.getElementById("weight").value;
-  let total = price * weight;
-  document.getElementById("result").innerText =
-    "Total: " + total + " GHS";
-}
-</script>
+  const $ = (id) => document.getElementById(id);
 
+  // ---- Labels (EN/JA) ----
+  const T = {
+    en: {
+      appTitle: "Gold Calculator",
+      appSub: "Simple, fast, no mistakes",
+      langLabel: "Language",
+      modeLabel: "Mode",
+      modeHint: "Choose how you want to calculate.",
+      straight: "Straight (Price × Weight)",
+      reverse: "Reverse (Target Profit)",
+      inputsTitle: "Inputs",
+      priceLabel: "Gold price (GHS / g)",
+      weightLabel: "Weight (g)",
+      sellLabel: "Sell price (GHS / g)",
+      sellHint: "If you enter this, profit will also be shown.",
+      profitTargetLabel: "Target profit (GHS)",
+      otherCostLabel: "Other costs (GHS)",
+      otherCostHint: "Put 0 if none.",
+      calcBtn: "Calculate",
+      autoHint: "Tip: You can also just type; it will update.",
+      resultsTitle: "Results",
+      totalCostLine: "Total cost: ",
+      profitLine: "Profit: ",
+      d_cost: (w,p,oc) => `Cost = (${p} × ${w}) + ${oc}`,
+      d_rev_buy: (maxBuyPerG) => `Max buy price (GHS/g) to hit target: ${maxBuyPerG}`,
+      d_rev_total: (needSellTotal) => `Required total sell amount (GHS): ${needSellTotal}`,
+      d_profit: (sell,buy,w,oc) => `Profit = (${sell} − ${buy}) × ${w} − ${oc}`,
+      dash: "-"
+    },
+    ja: {
+      appTitle: "ゴールド計算",
+      appSub: "シンプル・速い・ミスなし",
+      langLabel: "言語",
+      modeLabel: "モード",
+      modeHint: "計算したい方法を選んでください。",
+      straight: "通常（単価×重さ）",
+      reverse: "逆算（目標利益）",
+      inputsTitle: "入力",
+      priceLabel: "金価格（GHS / g）",
+      weightLabel: "重さ（g）",
+      sellLabel: "売値（GHS / g）",
+      sellHint: "ここも入れると利益も表示します。",
+      profitTargetLabel: "目標利益（GHS）",
+      otherCostLabel: "その他コスト（GHS）",
+      otherCostHint: "無ければ 0。",
+      calcBtn: "計算",
+      autoHint: "ヒント：入力するだけで自動更新します。",
+      resultsTitle: "結果",
+      totalCostLine: "合計原価: ",
+      profitLine: "利益: ",
+      d_cost: (w,p,oc) => `原価 = (${p} × ${w}) + ${oc}`,
+      d_rev_buy: (maxBuyPerG) => `目標利益に届く最大の買値（GHS/g）: ${maxBuyPerG}`,
+      d_rev_total: (needSellTotal) => `必要な売上合計（GHS）: ${needSellTotal}`,
+      d_profit: (sell,buy,w,oc) => `利益 = (${sell} − ${buy}) × ${w} − ${oc}`,
+      dash: "-"
+    }
+  };
+
+  function n(v){
+    const x = Number(v);
+    return Number.isFinite(x) ? x : 0;
+  }
+  function fmt(x){
+    if(!Number.isFinite(x)) return "-";
+    // 小数が多いと見づらいので、整数に近いなら整数表示
+    const isInt = Math.abs(x - Math.round(x)) < 1e-9;
+    return isInt ? String(Math.round(x)) : String(Math.round(x * 100) / 100);
+  }
+
+  function applyLang(){
+    const lang = $("lang").value;
+    const t = T[lang];
+
+    $("appTitle").innerText = t.appTitle;
+    $("appSub").innerText = t.appSub;
+    $("langLabel").innerText = t.langLabel;
+
+    $("modeLabel").innerText = t.modeLabel;
+    $("modeHint").innerText = t.modeHint;
+
+    // mode options
+    $("mode").options[0].text = t.straight;
+    $("mode").options[1].text = t.reverse;
+
+    $("inputsTitle").innerText = t.inputsTitle;
+    $("priceLabel").innerText = t.priceLabel;
+    $("weightLabel").innerText = t.weightLabel;
+    $("sellLabel").innerText = t.sellLabel;
+    $("sellHint").innerText = t.sellHint;
+    $("profitTargetLabel").innerText = t.profitTargetLabel;
+    $("otherCostLabel").innerText = t.otherCostLabel;
+    $("otherCostHint").innerText = t.otherCostHint;
+
+    $("calcBtn").innerText = t.calcBtn;
+    $("autoHint").innerText = t.autoHint;
+
+    $("resultsTitle").innerText = t.resultsTitle;
+
+    recalc();
+  }
+
+  function applyMode(){
+    const mode = $("mode").value;
+    if(mode === "reverse"){
+      $("rowProfitTarget").style.display = "";
+      $("rowPrice").style.display = "none"; // 逆算では買値は「結果」で出す想定
+    }else{
+      $("rowProfitTarget").style.display = "none";
+      $("rowPrice").style.display = "";
+    }
+    recalc();
+  }
+
+  function recalc(){
+    const lang = $("lang").value;
+    const t = T[lang];
+    const mode = $("mode").value;
+
+    const w = n($("weight").value);
+    const otherCost = n($("otherCost").value);
+
+    // Straight: total cost = buy price * weight + otherCost
+    if(mode === "straight"){
+      const buy = n($("price").value);
+      const totalCost = (buy * w) + otherCost;
+
+      $("totalCostLine").innerText = t.totalCostLine + (w>0 || buy>0 || otherCost>0 ? fmt(totalCost) + " GHS" : t.dash);
+      $("detail1").innerText = (w>0 || buy>0 || otherCost>0) ? t.d_cost(fmt(w), fmt(buy), fmt(otherCost)) : t.dash;
+      $("detail2").innerText = t.dash;
+
+      // Profit if sell price is provided
+      const sell = n($("sell").value);
+      if(sell > 0 && w > 0){
+        const profit = (sell - buy) * w - otherCost;
+        $("profitLine").innerText = t.profitLine + fmt(profit) + " GHS";
+        $("detail3").innerText = t.d_profit(fmt(sell), fmt(buy), fmt(w), fmt(otherCost));
+        $("detail4").innerText = t.dash;
+      }else{
+        $("profitLine").innerText = t.profitLine + t.dash;
+        $("detail3").innerText = t.dash;
+        $("detail4").innerText = t.dash;
+      }
+      return;
+    }
+
+    // Reverse: Given weight, target profit, sell price (optional), otherCost
+    const target = n($("profitTarget").value);
+    const sell = n($("sell").value);
+
+    // If sell price is given, compute max buy price per g to reach target:
+    // target = (sell - buy) * w - otherCost  => buy = sell - (target + otherCost)/w
+    if(w > 0 && sell > 0){
+      const maxBuyPerG = sell - (target + otherCost) / w;
+      $("totalCostLine").innerText = t.totalCostLine + t.dash;
+      $("detail1").innerText = t.d_rev_buy(fmt(maxBuyPerG));
+      $("detail2").innerText = t.dash;
+
+      // also show required total sell amount if buy price fixed? (not given)
+      $("profitLine").innerText = t.profitLine + fmt(target) + " GHS";
+      $("detail3").innerText = t.d_profit(fmt(sell), fmt(maxBuyPerG), fmt(w), fmt(otherCost));
+      $("detail4").innerText = t.dash;
+    }else if(w > 0){
+      // If sell price not given, show required total revenue assuming "buy total + target + otherCost"
+      // but buy total unknown → we can only show target + otherCost as "extra needed"
+      $("totalCostLine").innerText = t.totalCostLine + t.dash;
+      $("detail1").innerText = t.d_rev_total(fmt(target + otherCost));
+      $("detail2").innerText = t.dash;
+
+      $("profitLine").innerText = t.profitLine + (target>0 ? fmt(target) + " GHS" : t.dash);
+      $("detail3").innerText = t.dash;
+      $("detail4").innerText = t.dash;
+    }else{
+      $("totalCostLine").innerText = t.totalCostLine + t.dash;
+      $("profitLine").innerText = t.profitLine + t.dash;
+      $("detail1").innerText = t.dash;
+      $("detail2").innerText = t.dash;
+      $("detail3").innerText = t.dash;
+      $("detail4").innerText = t.dash;
+    }
+  }
+
+  $("lang").addEventListener("change", applyLang);
+  $("mode").addEventListener("change", applyMode);
+  $("calcBtn").addEventListener("click", recalc);
+
+  // Auto update
+  ["price","weight","sell","profitTarget","otherCost"].forEach(id=>{
+    $(id).addEventListener("input", recalc);
+  });
+
+  // init
+  applyLang();
+  applyMode();
+</script>
 </body>
 </html>
