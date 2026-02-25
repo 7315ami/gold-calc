@@ -4,7 +4,30 @@
 <meta charset="UTF-8">
 <title>Gold Calc</title>
 </head>
+
 <body>
-<h1>Gold Calc START</h1>
+
+<h1>Gold Calculator</h1>
+
+<label>Gold price (GHS / g)</label><br>
+<input id="price" type="number"><br><br>
+
+<label>Weight (g)</label><br>
+<input id="weight" type="number"><br><br>
+
+<button onclick="calc()">Calculate</button>
+
+<h2 id="result"></h2>
+
+<script>
+function calc(){
+  let price = document.getElementById("price").value;
+  let weight = document.getElementById("weight").value;
+  let total = price * weight;
+  document.getElementById("result").innerText =
+    "Total: " + total + " GHS";
+}
+</script>
+
 </body>
 </html>
