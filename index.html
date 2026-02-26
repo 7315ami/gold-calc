@@ -2,504 +2,295 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Gold Profit Calculator</title>
+<title>ゴールド計算</title>
 
 <style>
 :root{
-  --bg-normal:#fffdf7;
-  --bg-special:#f4f8ff;
+  --bg:#f5f6f8;
   --card:#ffffff;
-  --line:#e5e7eb;
-  --text:#111827;
-  --muted:#6b7280;
-  --unit:#9ca3af;
-  --blue:#0b3ea8;
-  --red:#dc2626;
-  --gold:#a57c00;
+  --line:#e3e5ea;
+  --main:#0b1736;
+  --accent:#ffd400;
 }
 
 *{box-sizing:border-box;}
+
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:var(--text);
-  background:#f3f4f6;
+  background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color:#111;
 }
 
 .wrap{
-  max-width:760px;
+  max-width:720px;
   margin:0 auto;
-  padding:14px;
+  padding:16px;
 }
 
 .card{
   background:var(--card);
+  border-radius:18px;
   border:1px solid var(--line);
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:12px;
+  padding:16px;
+  margin-bottom:14px;
 }
 
 h1{
-  margin:0;
-  font-size:28px;
-  line-height:1.2;
+  margin:0 0 4px;
+  font-size:34px;
+  font-weight:800;
+  color:var(--main);
 }
 
 .sub{
-  font-size:14px;
-  color:var(--muted);
-  margin-top:4px;
+  color:#6d7380;
+  margin-bottom:14px;
 }
 
 .row{
   display:flex;
-  gap:8px;
-  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
 }
 
-.space{
-  height:8px;
-}
-
-.tabs{
-  display:flex;
-  gap:8px;
-  margin-top:12px;
-}
-
-.tab{
+button{
   flex:1;
   border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-  text-align:center;
-  font-weight:700;
   background:#fff;
+  padding:12px;
+  border-radius:14px;
+  font-size:24px;
+  font-weight:700;
   cursor:pointer;
 }
 
-.tab.active.normal{
-  background:var(--bg-normal);
+button.active{
+  background:#eef1f7;
 }
 
-.tab.active.special{
-  background:var(--bg-special);
-  color:var(--gold);
+#tabSpecial.active{
+  background:var(--accent);
 }
 
-.section{
-  display:none;
+.label{
+  font-size:24px;
+  font-weight:700;
+  margin:14px 0 8px;
 }
 
-.section.active{
-  display:block;
-}
-
-.inputBlock{
-  margin-top:10px;
-}
-
-.labelTop{
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:4px;
-}
-
-.inputBig{
+input{
   width:100%;
-  height:52px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  font-size:28px;
-  font-weight:700;
-  padding:0 14px;
-  outline:none;
-}
-
-.unit{
-  font-size:12px;
-  color:var(--unit);
-  margin-top:4px;
-}
-
-.btn{
-  height:50px;
-  border:none;
-  border-radius:12px;
-  background:#0f172a;
-  color:#fff;
-  font-size:18px;
-  font-weight:700;
-  padding:0 20px;
-}
-
-.resultBig{
-  font-size:42px;
+  padding:14px;
+  font-size:34px;
   font-weight:800;
-  line-height:1.1;
+  border-radius:14px;
+  border:1px solid var(--line);
+  margin-bottom:8px;
 }
 
-.resultBlue{
-  color:var(--blue);
+.small{
+  font-size:20px;
+  color:#6d7380;
+  margin-bottom:10px;
 }
 
-.resultRed{
-  color:var(--red);
+.calcBtn{
+  background:var(--main);
+  color:#fff;
+  border:none;
+  width:140px;
 }
 
-.resultUnit{
-  font-size:18px;
-  color:var(--unit);
-  margin-left:6px;
+.resultTitle{
+  font-size:30px;
+  font-weight:800;
+  margin-bottom:10px;
 }
 
-.noteSmall{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:4px;
+.metric{
+  margin:14px 0;
+}
+
+.metricLabel{
+  font-size:24px;
+  color:#555;
+}
+
+.metricValue{
+  font-size:38px;
+  font-weight:800;
+  color:var(--main);
 }
 
 details{
+  margin-top:12px;
   border:1px solid var(--line);
   border-radius:12px;
   padding:10px;
-  margin-top:10px;
+  background:#fafafa;
 }
 
 summary{
+  font-size:22px;
   font-weight:700;
   cursor:pointer;
-}
-
-.langRow{
-  display:flex;
-  gap:8px;
-}
-
-.langBtn{
-  flex:1;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:8px;
-  text-align:center;
-  font-weight:700;
-  background:#fff;
-  cursor:pointer;
-}
-
-.langBtn.active{
-  background:#eef2ff;
-}
-
-.hidden{
-  display:none;
 }
 </style>
 </head>
 
 <body>
+
 <div class="wrap">
 
 <div class="card">
-  <h1 id="appTitle">ゴールド計算</h1>
-  <div class="sub" id="appSub">Ghana → Japan / 利益計算</div>
+  <h1 id="title">ゴールド計算</h1>
+  <div class="sub" id="subtitle">Ghana → Japan / 利益計算</div>
 
-  <div class="space"></div>
-
-  <div class="langRow">
-    <div class="langBtn active" id="btnJP">日本語</div>
-    <div class="langBtn" id="btnEN">English</div>
-    <div class="langBtn" id="btnPDF">PDF</div>
+  <div class="row">
+    <button id="btnJa" class="active">日本語</button>
+    <button id="btnEn">English</button>
+    <button id="btnPdf">PDF</button>
   </div>
 
-  <div class="tabs">
-    <div class="tab normal active" id="tabNormal">通常計算</div>
-    <div class="tab special" id="tabSpecial">特別調達枠</div>
+  <div class="row">
+    <button id="tabNormal" class="active">通常計算</button>
+    <button id="tabSpecial">特別調達枠</button>
   </div>
 </div>
 
-<!-- ================= NORMAL ================= -->
-<div class="section active" id="normalSec">
-
 <div class="card">
-  <h3 id="nInputTitle">入力</h3>
 
-  <div class="inputBlock">
-    <div class="labelTop">購入単価（GHS / Ghana pound）</div>
-    <input id="nPrice" class="inputBig" value="13000">
-    <div class="unit">1 Ghana pound あたり</div>
+  <div class="label">入力</div>
+
+  <div>購入単価（GHS / Ghana pound）</div>
+  <input id="price" value="11000">
+  <div class="small">1 Ghana pound あたり</div>
+
+  <div>重量（Ghana pound）</div>
+  <input id="pound" value="641.03">
+
+  <div>重量（g）</div>
+  <input id="gram" value="5000">
+  <div class="small">1 Ghana pound = 7.8 g（連動）</div>
+
+  <div>為替（1 GHS → JPY）</div>
+  <input id="fx" value="14.5">
+
+  <div>日本24金 買取参考価格（JPY / g）</div>
+  <input id="jp" value="26000">
+
+  <div>その他コスト（GHS）</div>
+  <input id="cost" value="0">
+
+  <div class="row">
+    <button id="calc" class="calcBtn">計算</button>
   </div>
 
-  <div class="inputBlock">
-    <div class="labelTop">重量（Ghana pound）</div>
-    <input id="nPound" class="inputBig" value="641.03">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">重量（g）</div>
-    <input id="nGram" class="inputBig" value="5000">
-    <div class="unit">1 Ghana pound = 7.8 g（連動）</div>
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">為替（1 GHS → JPY）</div>
-    <input id="nFx" class="inputBig" value="14.5">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">日本24金 買取参考価格（JPY / g）</div>
-    <input id="nJapan" class="inputBig" value="26000">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">その他コスト（GHS）</div>
-    <input id="nOther" class="inputBig" value="0">
-  </div>
-
-  <div class="space"></div>
-
-  <button class="btn" id="nCalc">計算</button>
 </div>
 
 <div class="card">
-  <h3 id="nResultTitle">結果</h3>
 
-  <div class="noteSmall">支払う総額（JPY）</div>
-  <div class="resultBig" id="nPay">—</div>
+  <div class="resultTitle">結果</div>
 
-  <div class="space"></div>
+  <div class="metric">
+    <div class="metricLabel">支払う総額（JPY）</div>
+    <div class="metricValue" id="total">—</div>
+  </div>
 
-  <div class="noteSmall">最終利益（JPY）</div>
-  <div class="resultBig resultBlue" id="nProfit">—</div>
+  <div class="metric">
+    <div class="metricLabel">最終利益（JPY）</div>
+    <div class="metricValue" id="profit">—</div>
+  </div>
 
-  <div class="noteSmall" id="nProfitNote"></div>
-
-  <div class="space"></div>
-
-  <div class="noteSmall">利益率（%）</div>
-  <div class="resultBig" id="nRate">—</div>
+  <div class="metric">
+    <div class="metricLabel">利益率（%）</div>
+    <div class="metricValue" id="rate">—</div>
+  </div>
 
   <details>
     <summary>内訳（タップで開く）</summary>
-    <div id="nBreak"></div>
+    <div id="detail"></div>
   </details>
 
 </div>
-</div>
-<!-- ================= SPECIAL ================= -->
-<div class="section" id="specialSec">
-
-<div class="card" style="background:var(--bg-special)">
-  <h3 id="sInputTitle" style="color:var(--gold)">特別調達枠｜入力</h3>
-
-  <div class="inputBlock">
-    <div class="labelTop">購入単価（GHS / Ghana pound）</div>
-    <input id="sPrice" class="inputBig" value="10000">
-    <div class="unit">特別調達価格</div>
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">月間想定調達量（g）</div>
-    <input id="sGram" class="inputBig" value="5000">
-    <div class="unit" id="sPoundView">≈ 641.03 Ghana pound</div>
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">為替（1 GHS → JPY）</div>
-    <input id="sFx" class="inputBig" value="14.5">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">日本24金 買取参考価格（JPY / g）</div>
-    <input id="sJapan" class="inputBig" value="26000">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">その他コスト（GHS）</div>
-    <input id="sOther" class="inputBig" value="0">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">投下資金（JPY）</div>
-    <input id="sInvest" class="inputBig" value="15000000">
-  </div>
-
-  <div class="inputBlock">
-    <div class="labelTop">想定回収期間（表示のみ）</div>
-    <input id="sRecovery" class="inputBig" value="3〜5ヶ月" readonly>
-    <div class="unit">※ 見込み表示（固定テキスト）</div>
-  </div>
-
-  <div class="space"></div>
-
-  <button class="btn" id="sCalc">計算</button>
-</div>
-
-<div class="card">
-  <h3 id="sResultTitle">結果</h3>
-
-  <div class="noteSmall">支払う総額（JPY）</div>
-  <div class="resultBig" id="sPay">—</div>
-
-  <div class="space"></div>
-
-  <div class="noteSmall">見込み利益（JPY）</div>
-  <div class="resultBig resultBlue" id="sProfit">—</div>
-
-  <div class="noteSmall" style="color:#9ca3af;">
-    ※ 稼働率60%で算出
-  </div>
-
-  <div class="space"></div>
-
-  <div class="noteSmall">利益率（%）</div>
-  <div class="resultBig" id="sRate">—</div>
-
-  <details>
-    <summary>内訳（タップで開く）</summary>
-    <div id="sBreak"></div>
-  </details>
-
-</div>
-</div>
-
-<!-- ================= PDF MODAL ================= -->
-<div class="card hidden" id="pdfSelect">
-  <h3>PDF 出力</h3>
-
-  <div class="inputBlock">
-    <label><input type="checkbox" id="pdfNormal" checked> 通常計算</label>
-  </div>
-
-  <div class="inputBlock">
-    <label><input type="checkbox" id="pdfSpecial" checked> 特別調達枠</label>
-  </div>
-
-  <div class="space"></div>
-  <button class="btn" id="pdfGo">PDF作成</button>
-</div>
-
-</div> <!-- wrap -->
-
 <script>
-const $ = id => document.getElementById(id);
 
-let lang = "jp";
+const $ = (id)=>document.getElementById(id);
 
-function num(v){
-  return Number(String(v).replace(/,/g,"")) || 0;
-}
+let mode = "normal";
+let lang = "ja";
 
-function fmt(n){
-  return Number(n).toLocaleString();
-}
-
-function calcNormal(){
-
-  const price = num($("nPrice").value);
-  const pound = num($("nPound").value);
-  const gram  = num($("nGram").value);
-  const fx    = num($("nFx").value);
-  const jp    = num($("nJapan").value);
-  const other = num($("nOther").value);
-
-  const costGHS = price*pound + other;
-  const payJPY  = costGHS * fx;
-
-  const sellJPY = gram * jp;
-
-  const profit = sellJPY - payJPY;
-  const rate = payJPY ? (profit/payJPY*100) : 0;
-
-  $("nPay").innerHTML = fmt(payJPY) + "<span class='resultUnit'>JPY</span>";
-
-  $("nProfit").classList.remove("resultRed","resultBlue");
-  $("nProfit").classList.add(profit>=0?"resultBlue":"resultRed");
-  $("nProfit").innerHTML = fmt(profit) + "<span class='resultUnit'>JPY</span>";
-
-  $("nRate").innerHTML = rate.toFixed(2) + "<span class='resultUnit'>%</span>";
-
-  $("nBreak").innerHTML =
-    "ガーナ総コスト : "+fmt(costGHS)+" GHS<br>" +
-    "日本売却想定 : "+fmt(sellJPY)+" JPY";
-}
-
-function calcSpecial(){
-
-  const price = num($("sPrice").value);
-  const gram  = num($("sGram").value);
-  const fx    = num($("sFx").value);
-  const jp    = num($("sJapan").value);
-  const other = num($("sOther").value);
-
-  const pound = gram / 7.8;
-  $("sPoundView").textContent =
-    "≈ " + pound.toFixed(2) + " Ghana pound";
-  const costGHS = price*pound + other;
-  const payJPY  = costGHS * fx;
-
-  const sellJPY = gram * jp;
-
-  const profit = sellJPY - payJPY;
-  const rate = payJPY ? (profit/payJPY*100) : 0;
-
-  $("sPay").innerHTML =
-    fmt(payJPY) + "<span class='resultUnit'>JPY</span>";
-
-  $("sProfit").classList.remove("resultRed","resultBlue");
-  $("sProfit").classList.add(profit>=0?"resultBlue":"resultRed");
-  $("sProfit").innerHTML =
-    fmt(profit) + "<span class='resultUnit'>JPY</span>";
-
-  $("sRate").innerHTML =
-    rate.toFixed(2) + "<span class='resultUnit'>%</span>";
-
-  $("sBreak").innerHTML =
-    "ガーナ総コスト : "+fmt(costGHS)+" GHS<br>" +
-    "日本売却想定 : "+fmt(sellJPY)+" JPY";
-}
-
-/* ===== TAB ===== */
-function showTab(type){
-  $("normalSec").classList.add("hidden");
-  $("specialSec").classList.add("hidden");
-
-  $("tabNormal").classList.remove("active");
+/* ====== TAB ====== */
+$("tabNormal").onclick = ()=>{
+  mode="normal";
+  $("tabNormal").classList.add("active");
   $("tabSpecial").classList.remove("active");
-
-  if(type==="normal"){
-    $("normalSec").classList.remove("hidden");
-    $("tabNormal").classList.add("active");
-  }else{
-    $("specialSec").classList.remove("hidden");
-    $("tabSpecial").classList.add("active");
-  }
-}
-
-/* ===== PDF ===== */
-$("pdfBtn").onclick = ()=>{
-  $("pdfSelect").classList.toggle("hidden");
 };
 
-$("pdfGo").onclick = ()=>{
-  window.print();
+$("tabSpecial").onclick = ()=>{
+  mode="special";
+  $("tabSpecial").classList.add("active");
+  $("tabNormal").classList.remove("active");
 };
 
-/* ===== EVENTS ===== */
-$("nCalc").onclick = calcNormal;
-$("sCalc").onclick = calcSpecial;
+/* ====== LANGUAGE ====== */
+$("btnJa").onclick=()=>{
+  lang="ja";
+  $("btnJa").classList.add("active");
+  $("btnEn").classList.remove("active");
+};
 
-$("tabNormal").onclick = ()=>showTab("normal");
-$("tabSpecial").onclick = ()=>showTab("special");
+$("btnEn").onclick=()=>{
+  lang="en";
+  $("btnEn").classList.add("active");
+  $("btnJa").classList.remove("active");
+};
 
-/* ===== INIT ===== */
-showTab("normal");
-calcNormal();
-calcSpecial();
+/* ====== LINKED INPUT ====== */
+$("gram").oninput=()=>{
+  $("pound").value=(Number($("gram").value)/7.8).toFixed(2);
+};
+
+$("pound").oninput=()=>{
+  $("gram").value=(Number($("pound").value)*7.8).toFixed(0);
+};
+
+/* ====== CALC ====== */
+$("calc").onclick=()=>{
+
+  const price=Number($("price").value);
+  const pound=Number($("pound").value);
+  const gram=Number($("gram").value);
+  const fx=Number($("fx").value);
+  const jp=Number($("jp").value);
+  const cost=Number($("cost").value);
+
+  const buyGHS = price*pound;
+  const totalGHS = buyGHS + cost;
+  const totalJPY = totalGHS*fx;
+
+  const sellJPY = gram*jp;
+  const profit = sellJPY-totalJPY;
+  const rate = totalJPY===0 ? 0 : (profit/totalJPY*100);
+
+  $("total").textContent = totalJPY.toLocaleString();
+  $("profit").textContent = profit.toLocaleString();
+  $("rate").textContent = rate.toFixed(2);
+
+  $("detail").innerHTML =
+    "購入額(GHS): "+buyGHS.toLocaleString()+"<br>"+
+    "総コスト(GHS): "+totalGHS.toLocaleString()+"<br>"+
+    "日本売却額(JPY): "+sellJPY.toLocaleString();
+
+};
+
+/* ====== PDF ====== */
+$("btnPdf").onclick=()=>window.print();
 
 </script>
+
 </body>
 </html>
