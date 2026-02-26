@@ -1660,18 +1660,18 @@
       });
 
       // title 8-tap => reveal settings button
-      $("titleTap").addEventListener("click", ()=>{
-        tapCount++;
-        if(!tapTimer){
-          tapTimer = setTimeout(()=>{
-            resetTap();
-          }, 2500);
-        }
-        if(tapCount >= 8){
-          showSettingsButton(true);
-          resetTap();
-        }
-      });
+$("titleTap").addEventListener("click", ()=>{
+  tapCount++;
+  if(!tapTimer){
+    tapTimer = setTimeout(()=>{
+      resetTap();
+    }, 2500);
+  }
+  if(tapCount >= 8){
+    showSettingsButton(true);
+    resetTap();
+  }
+});
 
       $("settingsBtn").addEventListener("click", ()=>{
         openPwModal();
