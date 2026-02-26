@@ -1595,17 +1595,17 @@
     }
 
     function doLogin(){
-      const id = $("loginId").value.trim().toLowerCase();
-      if(id === "sawa"){
-        setSessionOk();
-        showApp();
-        calc();
-        $("loginId").value = "";
-      } else {
-        // keep it simple
-        alert(lang==="ja" ? "IDが違います。" : "Invalid ID.");
-      }
-    }
+  const id = $("loginId").value.trim().toLowerCase();
+  if(id === "sawa"){
+    setSessionOk();
+    showApp();
+    calc();
+    $("loginId").value = "";
+  } else {
+    // keep it simple
+    alert(lang==="ja" ? "IDが違います。" : "Wrong ID.");
+  }
+}
 
     function doLogout(){
       clearSession();
