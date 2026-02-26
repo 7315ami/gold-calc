@@ -1694,9 +1694,15 @@ $("titleTap").addEventListener("touchcancel", ()=>{
       });
 
       // settings modal
-      $("setClose").addEventListener("click", closeSettingsModal);
-      $("setSave").addEventListener("click", saveSettingsFromModal);
-      $("pwChangeBtn").addEventListener("click", changePassword);
+      $("setClose").addEventListener("click", ()=>{
+  closeSettingsModal();
+  showSettingsButton(false);
+});
+$("setSave").addEventListener("click", ()=>{
+  saveSettingsFromModal();
+  showSettingsButton(false);
+});
+$("pwChangeBtn").addEventListener("click", changePassword);
 
       // close settings by clicking overlay area
       $("setOverlay").addEventListener("click", (e)=>{
