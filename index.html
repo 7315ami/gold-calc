@@ -1659,18 +1659,20 @@
         syncFromPound();
       });
 
-      // title 8-tap => reveal settings button
-$("titleTap").addEventListener("click", ()=>{
-  tapCount++;
-  if(!tapTimer){
-    tapTimer = setTimeout(()=>{
-      resetTap();
-    }, 2500);
-  }
-  if(tapCount >= 8){
+      // title LONG PRESS => reveal settings button
+let pressTimer = null;
+
+$("titleTap").addEventListener("touchstart", ()=>{
+  pressTimer = setTimeout(()=>{
     showSettingsButton(true);
-    resetTap();
-  }
+  }, 900); // 0.9秒長押し
+});
+
+$("titleTap").addEventListener("touchend", ()=>{
+  clearTimeout(pressTimer);
+});
+$("titleTap").addEventListener("touchcancel", ()=>{
+  clearTimeout(pressTimer);
 });
 
       $("settingsBtn").addEventListener("click", ()=>{
