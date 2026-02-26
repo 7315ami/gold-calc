@@ -1,296 +1,1731 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ゴールド計算</title>
 
-<title>ゴールド計算</title>
+  <style>
+    :root{
+      --bg-normal:#fff8e9;         /* 通常：薄いクリーム */
+      --bg-special:#eaf3ff;        /* 特別：薄いブルー */
+      --card:#ffffff;
+      --line:#e3e5ea;
+      --text:#101318;
+      --muted:#8a909c;
+      --main:#0b1736;
+      --blueprofit:#0b3a9b;        /* 利益プラス：濃い青 */
+      --redloss:#c22020;           /* 利益マイナス：赤 */
+      --gold:#b88900;              /* 特別調達枠：金文字 */
+      --btn:#0b1736;
+      --btnText:#ffffff;
+      --chip:#eef1f7;
+      --shadow: 0 10px 30px rgba(15,23,42,.08);
+    }
 
-<style>
-:root{
-  --bg:#f5f6f8;
-  --card:#ffffff;
-  --line:#e3e5ea;
-  --main:#0b1736;
-  --accent:#ffd400;
-}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans",sans-serif;
+      color:var(--text);
+      background:var(--bg-normal);
+    }
 
-*{box-sizing:border-box;}
+    .wrap{
+      max-width:820px;
+      margin:0 auto;
+      padding:16px;
+    }
 
-body{
-  margin:0;
-  background:var(--bg);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  color:#111;
-}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
 
-.wrap{
-  max-width:720px;
-  margin:0 auto;
-  padding:16px;
-}
+    .headerTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
 
-.card{
-  background:var(--card);
-  border-radius:18px;
-  border:1px solid var(--line);
-  padding:16px;
-  margin-bottom:14px;
-}
+    .titleBlock{ min-width:240px; }
+    h1{
+      margin:0;
+      font-size:34px;
+      font-weight:900;
+      color:var(--main);
+      line-height:1.05;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+    }
+    .sub{
+      margin-top:6px;
+      color:#6d7380;
+      font-size:14px;
+    }
 
-h1{
-  margin:0 0 4px;
-  font-size:34px;
-  font-weight:800;
-  color:var(--main);
-}
+    .topButtons{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+    }
 
-.sub{
-  color:#6d7380;
-  margin-bottom:14px;
-}
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      line-height:1;
+      white-space:nowrap;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .btn.primary{
+      background:var(--btn);
+      color:var(--btnText);
+      border-color:transparent;
+    }
+    .btn.active{
+      background:var(--chip);
+    }
+    .btn.goldText{
+      color:var(--gold);
+      font-weight:900;
+    }
+    .btn.small{
+      font-size:14px;
+      padding:8px 10px;
+      border-radius:12px;
+    }
 
-.row{
-  display:flex;
-  gap:10px;
-  margin-bottom:10px;
-}
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      flex:1;
+      min-width:160px;
+      text-align:center;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:18px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .tab.active{
+      background:var(--chip);
+    }
+    .tab.specialLabel{
+      color:var(--gold);
+      font-weight:900;
+    }
 
-button{
-  flex:1;
-  border:1px solid var(--line);
-  background:#fff;
-  padding:12px;
-  border-radius:14px;
-  font-size:24px;
-  font-weight:700;
-  cursor:pointer;
-}
+    .sectionTitle{
+      font-size:20px;
+      font-weight:900;
+      color:var(--main);
+      margin:4px 0 12px;
+    }
 
-button.active{
-  background:#eef1f7;
-}
+    /* Input UI A */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:720px){
+      .grid{ grid-template-columns:1fr; }
+    }
 
-#tabSpecial.active{
-  background:var(--accent);
-}
+    .field{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+    }
+    .fieldHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .fieldLabel{
+      font-size:14px;
+      font-weight:900;
+      color:var(--main);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .fieldUnit{
+      font-size:12px;
+      color:var(--muted); /* 単位は薄グレー */
+      font-weight:800;
+      white-space:nowrap;
+    }
+    input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:28px;      /* 数字は大きく */
+      font-weight:900;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{
+      border-color:#b8c1d6;
+      box-shadow:0 0 0 3px rgba(11,23,54,.08);
+    }
 
-.label{
-  font-size:24px;
-  font-weight:700;
-  margin:14px 0 8px;
-}
+    .hint{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      line-height:1.2;
+    }
 
-input{
-  width:100%;
-  padding:14px;
-  font-size:34px;
-  font-weight:800;
-  border-radius:14px;
-  border:1px solid var(--line);
-  margin-bottom:8px;
-}
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
 
-.small{
-  font-size:20px;
-  color:#6d7380;
-  margin-bottom:10px;
-}
+    .bigCalc{
+      padding:14px 16px;
+      font-size:18px;
+      font-weight:900;
+      border-radius:16px;
+      min-width:140px;
+    }
 
-.calcBtn{
-  background:var(--main);
-  color:#fff;
-  border:none;
-  width:140px;
-}
+    .results{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
 
-.resultTitle{
-  font-size:30px;
-  font-weight:800;
-  margin-bottom:10px;
-}
+    .metric{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+    }
+    .metricLabel{
+      font-size:16px;
+      font-weight:900;
+      color:#394150;
+      margin-bottom:6px;
+      white-space:nowrap;
+    }
+    .metricValue{
+      font-size:34px;
+      font-weight:950;
+      color:var(--main);
+      line-height:1.05;
+    }
+    .metricValue.small{
+      font-size:28px;
+    }
 
-.metric{
-  margin:14px 0;
-}
+    details{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background:#fbfbfd;
+    }
+    summary{
+      cursor:pointer;
+      font-weight:950;
+      font-size:16px;
+      color:var(--main);
+      list-style:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    summary::-webkit-details-marker{ display:none; }
 
-.metricLabel{
-  font-size:24px;
-  color:#555;
-}
+    .detailGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+    @media (max-width:720px){
+      .detailGrid{ grid-template-columns:1fr; }
+    }
 
-.metricValue{
-  font-size:38px;
-  font-weight:800;
-  color:var(--main);
-}
+    .miniBox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:#fff;
+    }
+    .miniTitle{
+      font-size:13px;
+      font-weight:950;
+      color:var(--main);
+      margin-bottom:8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .miniTitle .pct{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .kv{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:6px 0;
+      border-bottom:1px dashed #eef0f4;
+      font-size:13px;
+      font-weight:850;
+    }
+    .kv:last-child{ border-bottom:none; }
+    .kv .k{ color:#3c4454; }
+    .kv .v{ color:#0f172a; white-space:nowrap; }
 
-details{
-  margin-top:12px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-  background:#fafafa;
-}
+    .highlightTotal{
+      border:2px solid rgba(128,0,128,.35); /* 紫っぽく目立たせる */
+      background:rgba(128,0,128,.05);
+      border-radius:14px;
+      padding:10px;
+      margin-top:10px;
+    }
+    .highlightTotal .kv{ border-bottom:none; padding:4px 0; }
+    .highlightTotal .kv .k{ font-weight:950; }
+    .highlightTotal .kv .v{ font-weight:950; }
 
-summary{
-  font-size:22px;
-  font-weight:700;
-  cursor:pointer;
-}
-</style>
+    .noteSmall{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      margin-top:6px;
+    }
+
+    /* Modals */
+    .modalOverlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:50;
+    }
+    .modal{
+      width:min(720px, 100%);
+      background:#fff;
+      border-radius:18px;
+      border:1px solid var(--line);
+      box-shadow:0 20px 60px rgba(0,0,0,.22);
+      padding:16px;
+    }
+    .modalHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .modalTitle{
+      font-size:18px;
+      font-weight:950;
+      color:var(--main);
+    }
+    .modalBody{
+      display:grid;
+      gap:12px;
+    }
+
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:720px){ .row2{ grid-template-columns:1fr; } }
+
+    .divider{
+      height:1px;
+      background:#eef0f4;
+      margin:8px 0;
+    }
+
+    .danger{
+      color:var(--redloss);
+      font-weight:900;
+    }
+    .ok{
+      color:#0b3a9b;
+      font-weight:900;
+    }
+
+    /* Login */
+    #app{ display:none; }
+    #login{ display:block; }
+    .loginBox{
+      margin-top:14px;
+    }
+    .loginHint{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      margin-top:8px;
+    }
+
+    /* Print */
+    @media print{
+      body{ background:#fff !important; }
+      .btn, .tabs, .topButtons, #settingsBtn, #logoutBtn{ display:none !important; }
+      .card{ box-shadow:none !important; }
+      .modalOverlay{ display:none !important; }
+      .wrap{ max-width:980px; }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="wrap">
 
-<div class="wrap">
+    <!-- LOGIN -->
+    <div id="login" class="card">
+      <div class="headerTop">
+        <div class="titleBlock">
+          <h1 id="loginTitle">ログイン</h1>
+          <div class="sub" id="loginSub">Gold Calculator (Ghana → Japan)</div>
+        </div>
+      </div>
 
-<div class="card">
-  <h1 id="title">ゴールド計算</h1>
-  <div class="sub" id="subtitle">Ghana → Japan / 利益計算</div>
+      <div class="loginBox">
+        <div class="field">
+          <div class="fieldHead">
+            <div class="fieldLabel" id="loginLabel">ログインID</div>
+            <div class="fieldUnit" id="loginUnit">sawa / SAWA</div>
+          </div>
+          <input id="loginId" inputmode="text" autocomplete="off" autocapitalize="none" />
+          <div class="hint" id="loginHint">IDを入力してログインしてください。</div>
+        </div>
 
-  <div class="row">
-    <button id="btnJa" class="active">日本語</button>
-    <button id="btnEn">English</button>
-    <button id="btnPdf">PDF</button>
+        <div class="actions">
+          <button class="btn primary bigCalc" id="loginBtn">ログイン</button>
+        </div>
+
+        <div class="loginHint" id="loginHint2">
+          ※このログインは「入口ゲート（簡易ロック）」です。端末ごとに独立して動きます。
+        </div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app">
+
+      <!-- HEADER -->
+      <div class="card">
+        <div class="headerTop">
+          <div class="titleBlock">
+            <h1 id="titleTap">ゴールド計算</h1>
+            <div class="sub" id="subtitle">Ghana → Japan / 利益計算</div>
+          </div>
+
+          <div class="topButtons">
+            <button class="btn active" id="btnJa">日本語</button>
+            <button class="btn" id="btnEn">English</button>
+            <button class="btn" id="btnPdf">PDF</button>
+            <button class="btn small" id="settingsBtn" style="display:none;">設定</button>
+            <button class="btn small" id="logoutBtn">ログアウト</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" id="tabNormal">通常計算</button>
+          <button class="tab specialLabel" id="tabSpecial">特別調達枠</button>
+        </div>
+      </div>
+
+      <!-- INPUTS -->
+      <div class="card" id="inputCard">
+        <div class="sectionTitle" id="inputTitle">入力</div>
+
+        <div class="grid">
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblPrice">購入単価</div>
+              <div class="fieldUnit" id="unitPrice">GHS / Ghana pound</div>
+            </div>
+            <input id="inPrice" inputmode="decimal" />
+            <div class="hint" id="hintPrice">1 Ghana pound あたり</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblOtherGHS">その他コスト</div>
+              <div class="fieldUnit" id="unitOtherGHS">GHS</div>
+            </div>
+            <input id="inOtherGHS" inputmode="decimal" />
+            <div class="hint" id="hintOtherGHS">保管費など（ガーナ側）</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblPound">重量</div>
+              <div class="fieldUnit" id="unitPound">Ghana pound</div>
+            </div>
+            <input id="inPound" inputmode="decimal" />
+            <div class="hint" id="hintLink1">g と連動</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblGram">重量</div>
+              <div class="fieldUnit" id="unitGram">g</div>
+            </div>
+            <input id="inGram" inputmode="decimal" />
+            <div class="hint" id="hintLink2">Ghana pound と連動</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblFx">為替</div>
+              <div class="fieldUnit" id="unitFx">1 GHS → JPY</div>
+            </div>
+            <input id="inFx" inputmode="decimal" />
+            <div class="hint" id="hintFx">円換算に使用</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblJpPrice">日本24金 買取参考価格</div>
+              <div class="fieldUnit" id="unitJpPrice">JPY / g</div>
+            </div>
+            <input id="inJpPrice" inputmode="decimal" />
+            <div class="hint" id="hintJp">例：26,000</div>
+          </div>
+
+          <!-- Special-only -->
+          <div class="field" id="specialSponsorBox" style="display:none;">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblSponsorFee">特別調達枠コスト</div>
+              <div class="fieldUnit" id="unitSponsorFee">JPY</div>
+            </div>
+            <input id="inSponsorFee" inputmode="decimal" />
+            <div class="hint" id="hintSponsorFee">例：15,000,000（100,000 USD 相当）</div>
+          </div>
+
+          <div class="field" id="specialMonthlyBox" style="display:none;">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="lblMonthlyQty">月間想定調達量</div>
+              <div class="fieldUnit" id="unitMonthlyQty">g（Ghana pound 連動）</div>
+            </div>
+            <input id="inMonthlyGram" inputmode="decimal" />
+            <div class="hint" id="hintMonthlyQty">デフォルト 5,000g</div>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="btn primary bigCalc" id="btnCalc">計算</button>
+          <div class="noteSmall" id="modeNote"></div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="card" id="resultCard">
+        <div class="sectionTitle" id="resultTitle">結果</div>
+
+        <div class="results">
+
+          <div class="metric">
+            <div class="metricLabel" id="lblTotalPay">支払う総額（JPY）</div>
+            <div class="metricValue" id="outTotalPay">—</div>
+          </div>
+
+          <details>
+            <summary id="summaryBreakdown">内訳（タップで開く）</summary>
+
+            <div class="detailGrid">
+
+              <div class="miniBox">
+                <div class="miniTitle">
+                  <span id="boxGhanaTitle">ガーナ側（GHS）</span>
+                  <span class="pct" id="boxGhanaPct">政府 10% / 輸送+保険 6%</span>
+                </div>
+
+                <div class="kv"><span class="k" id="kBuyGHS">購入合計</span><span class="v" id="vBuyGHS">—</span></div>
+                <div class="kv"><span class="k" id="kOtherGHS">その他コスト</span><span class="v" id="vOtherGHS">—</span></div>
+                <div class="kv"><span class="k" id="kGovFee">政府関係手数料</span><span class="v" id="vGovFee">—</span></div>
+                <div class="kv"><span class="k" id="kShipIns">輸出・保険</span><span class="v" id="vShipIns">—</span></div>
+
+                <div class="highlightTotal">
+                  <div class="kv"><span class="k" id="kGhanaTotal">ガーナ総コスト</span><span class="v" id="vGhanaTotal">—</span></div>
+                </div>
+
+                <div class="noteSmall" id="ghanaToJpyNote">—</div>
+              </div>
+
+              <div class="miniBox">
+                <div class="miniTitle">
+                  <span id="boxJapanTitle">日本側（JPY）</span>
+                  <span class="pct" id="boxJapanPct">消費税 10% / 精錬 100 JPY/g</span>
+                </div>
+
+                <div class="kv"><span class="k" id="kCif">CIF（円換算）</span><span class="v" id="vCif">—</span></div>
+                <div class="kv"><span class="k" id="kVat">消費税</span><span class="v" id="vVat">—</span></div>
+                <div class="kv"><span class="k" id="kRefine">精錬費</span><span class="v" id="vRefine">—</span></div>
+                <div class="kv"><span class="k" id="kJapanExtra">日本追加コスト</span><span class="v" id="vJapanExtra">—</span></div>
+
+                <div class="highlightTotal">
+                  <div class="kv"><span class="k" id="kJapanTotal">日本総コスト</span><span class="v" id="vJapanTotal">—</span></div>
+                </div>
+
+                <div class="noteSmall" id="japanTotalNote">—</div>
+              </div>
+
+            </div>
+          </details>
+
+          <div class="metric">
+            <div class="metricLabel" id="lblProfit">最終利益（JPY）</div>
+            <div class="metricValue" id="outProfit">—</div>
+            <div class="noteSmall" id="profitNoteSmall"></div>
+          </div>
+
+          <div class="metric">
+            <div class="metricLabel" id="lblProfitRate">利益率（%）</div>
+            <div class="metricValue small" id="outProfitRate">—</div>
+          </div>
+
+          <div class="metric">
+            <div class="metricLabel" id="lblSellRef">日本24金 買取参考価格（JPY/g）</div>
+            <div class="metricValue small" id="outSellRef">—</div>
+          </div>
+
+          <!-- Special-only extra info -->
+          <div class="metric" id="specialExtraInfo" style="display:none;">
+            <div class="metricLabel" id="lblPayback">投資回収見込み</div>
+            <div class="metricValue small" id="outPayback">—</div>
+            <div class="noteSmall" id="outPaybackNote"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="row">
-    <button id="tabNormal" class="active">通常計算</button>
-    <button id="tabSpecial">特別調達枠</button>
-  </div>
-</div>
-
-<div class="card">
-
-  <div class="label">入力</div>
-
-  <div>購入単価（GHS / Ghana pound）</div>
-  <input id="price" value="11000">
-  <div class="small">1 Ghana pound あたり</div>
-
-  <div>重量（Ghana pound）</div>
-  <input id="pound" value="641.03">
-
-  <div>重量（g）</div>
-  <input id="gram" value="5000">
-  <div class="small">1 Ghana pound = 7.8 g（連動）</div>
-
-  <div>為替（1 GHS → JPY）</div>
-  <input id="fx" value="14.5">
-
-  <div>日本24金 買取参考価格（JPY / g）</div>
-  <input id="jp" value="26000">
-
-  <div>その他コスト（GHS）</div>
-  <input id="cost" value="0">
-
-  <div class="row">
-    <button id="calc" class="calcBtn">計算</button>
+  <!-- PASSWORD MODAL -->
+  <div class="modalOverlay" id="pwOverlay">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="modalTitle" id="pwTitle">パスワード</div>
+        <button class="btn" id="pwClose">閉じる</button>
+      </div>
+      <div class="modalBody">
+        <div class="field">
+          <div class="fieldHead">
+            <div class="fieldLabel" id="pwLabel">パスワードを入力してください</div>
+            <div class="fieldUnit" id="pwUnit">初期: 1111</div>
+          </div>
+          <input id="pwInput" type="password" inputmode="numeric" autocomplete="off" />
+          <div class="hint" id="pwHint">正しいパスワードで設定画面を開きます。</div>
+        </div>
+        <div class="actions">
+          <button class="btn primary bigCalc" id="pwOk">開く</button>
+          <div id="pwMsg" class="noteSmall"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
-</div>
+  <!-- SETTINGS MODAL -->
+  <div class="modalOverlay" id="setOverlay">
+    <div class="modal">
+      <div class="modalHead">
+        <div class="modalTitle" id="setTitle">設定</div>
+        <button class="btn" id="setClose">閉じる</button>
+      </div>
 
-<div class="card">
+      <div class="modalBody">
 
-  <div class="resultTitle">結果</div>
+        <div class="row2">
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sPoundToGramLabel">1 Ghana pound =</div>
+              <div class="fieldUnit" id="sPoundToGramUnit">g</div>
+            </div>
+            <input id="sPoundToGram" inputmode="decimal" />
+            <div class="hint" id="sPoundToGramHint">重量連動に使用</div>
+          </div>
 
-  <div class="metric">
-    <div class="metricLabel">支払う総額（JPY）</div>
-    <div class="metricValue" id="total">—</div>
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sFxLabel">為替</div>
+              <div class="fieldUnit" id="sFxUnit">1 GHS → JPY</div>
+            </div>
+            <input id="sFx" inputmode="decimal" />
+            <div class="hint" id="sFxHint">円換算</div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sGovLabel">政府関係手数料</div>
+              <div class="fieldUnit" id="sGovUnit">%</div>
+            </div>
+            <input id="sGovPct" inputmode="decimal" />
+            <div class="hint" id="sGovHint">例：10</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sShipLabel">輸送+保険</div>
+              <div class="fieldUnit" id="sShipUnit">%</div>
+            </div>
+            <input id="sShipPct" inputmode="decimal" />
+            <div class="hint" id="sShipHint">例：6</div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sVatLabel">日本 消費税</div>
+              <div class="fieldUnit" id="sVatUnit">%</div>
+            </div>
+            <input id="sVatPct" inputmode="decimal" />
+            <div class="hint" id="sVatHint">CIF × 消費税（0で除外可）</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sRefineLabel">精錬費（23K→24K）</div>
+              <div class="fieldUnit" id="sRefineUnit">JPY / g</div>
+            </div>
+            <input id="sRefinePerG" inputmode="decimal" />
+            <div class="hint" id="sRefineHint">例：100</div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sJapanExtraLabel">日本追加コスト</div>
+              <div class="fieldUnit" id="sJapanExtraUnit">JPY</div>
+            </div>
+            <input id="sJapanExtra" inputmode="decimal" />
+            <div class="hint" id="sJapanExtraHint">必要なら入力</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sJpPriceLabel">日本24金 買取参考価格</div>
+              <div class="fieldUnit" id="sJpPriceUnit">JPY / g</div>
+            </div>
+            <input id="sJpPrice" inputmode="decimal" />
+            <div class="hint" id="sJpPriceHint">例：26,000</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row2">
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sSponsorLabel">特別調達枠コスト</div>
+              <div class="fieldUnit" id="sSponsorUnit">JPY</div>
+            </div>
+            <input id="sSponsorFee" inputmode="decimal" />
+            <div class="hint" id="sSponsorHint">例：15,000,000</div>
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="sUtilLabel">想定稼働率</div>
+              <div class="fieldUnit" id="sUtilUnit">%</div>
+            </div>
+            <input id="sUtilPct" inputmode="decimal" />
+            <div class="hint" id="sUtilHint">特別調達枠の見込み利益に反映</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary bigCalc" id="setSave">保存</button>
+          <div id="setMsg" class="noteSmall"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Password Change -->
+        <div class="sectionTitle" id="pwChangeTitle">パスワード変更</div>
+
+        <div class="row2">
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="pwCurLabel">現在パスワード</div>
+              <div class="fieldUnit"> </div>
+            </div>
+            <input id="pwCur" type="password" inputmode="numeric" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="pwNewLabel">新しいパスワード</div>
+              <div class="fieldUnit"> </div>
+            </div>
+            <input id="pwNew" type="password" inputmode="numeric" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="pwNew2Label">新しいパスワード（確認）</div>
+              <div class="fieldUnit"> </div>
+            </div>
+            <input id="pwNew2" type="password" inputmode="numeric" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <div class="fieldHead">
+              <div class="fieldLabel" id="pwChangeBtnLabel"> </div>
+              <div class="fieldUnit"> </div>
+            </div>
+            <button class="btn primary bigCalc" id="pwChangeBtn">変更して保存</button>
+            <div id="pwChangeMsg" class="noteSmall"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
-  <div class="metric">
-    <div class="metricLabel">最終利益（JPY）</div>
-    <div class="metricValue" id="profit">—</div>
-  </div>
+  <script>
+    // ===== Storage keys =====
+    const K = {
+      session: "goldcalc_session_ok",
+      pw: "goldcalc_pw",
+      settings: "goldcalc_settings"
+    };
 
-  <div class="metric">
-    <div class="metricLabel">利益率（%）</div>
-    <div class="metricValue" id="rate">—</div>
-  </div>
+    // ===== Defaults =====
+    const DEFAULTS = {
+      poundToGram: 7.8,
+      fx: 14.5,
+      govtPct: 10,
+      shipPct: 6,
+      vatPct: 10,
+      refinePerG: 100,
+      japanExtra: 0,
+      jpPrice: 26000,
 
-  <details>
-    <summary>内訳（タップで開く）</summary>
-    <div id="detail"></div>
-  </details>
+      sponsorFee: 15000000,   // JPY
+      utilPct: 60             // %
+    };
 
-</div>
-<script>
+    // ===== Language strings =====
+    const T = {
+      ja: {
+        loginTitle:"ログイン",
+        loginSub:"Gold Calculator (Ghana → Japan)",
+        loginLabel:"ログインID",
+        loginHint:"IDを入力してログインしてください。",
+        loginBtn:"ログイン",
+        subtitle:"Ghana → Japan / 利益計算",
+        inputTitle:"入力",
+        resultTitle:"結果",
+        tabNormal:"通常計算",
+        tabSpecial:"特別調達枠",
+        pdf:"PDF",
+        settings:"設定",
+        logout:"ログアウト",
 
-const $ = (id)=>document.getElementById(id);
+        lblPrice:"購入単価",
+        unitPrice:"GHS / Ghana pound",
+        hintPrice:"1 Ghana pound あたり",
 
-let mode = "normal";
-let lang = "ja";
+        lblOtherGHS:"その他コスト",
+        unitOtherGHS:"GHS",
+        hintOtherGHS:"保管費など（ガーナ側）",
 
-/* ====== TAB ====== */
-$("tabNormal").onclick = ()=>{
-  mode="normal";
-  $("tabNormal").classList.add("active");
-  $("tabSpecial").classList.remove("active");
-};
+        lblPound:"重量",
+        unitPound:"Ghana pound",
+        lblGram:"重量",
+        unitGram:"g",
+        hintLink1:"g と連動",
+        hintLink2:"Ghana pound と連動",
 
-$("tabSpecial").onclick = ()=>{
-  mode="special";
-  $("tabSpecial").classList.add("active");
-  $("tabNormal").classList.remove("active");
-};
+        lblFx:"為替",
+        unitFx:"1 GHS → JPY",
+        hintFx:"円換算に使用",
 
-/* ====== LANGUAGE ====== */
-$("btnJa").onclick=()=>{
-  lang="ja";
-  $("btnJa").classList.add("active");
-  $("btnEn").classList.remove("active");
-};
+        lblJpPrice:"日本24金 買取参考価格",
+        unitJpPrice:"JPY / g",
+        hintJp:"例：26,000",
 
-$("btnEn").onclick=()=>{
-  lang="en";
-  $("btnEn").classList.add("active");
-  $("btnJa").classList.remove("active");
-};
+        lblSponsorFee:"特別調達枠コスト",
+        unitSponsorFee:"JPY",
+        hintSponsorFee:"例：15,000,000（100,000 USD 相当）",
 
-/* ====== LINKED INPUT ====== */
-$("gram").oninput=()=>{
-  $("pound").value=(Number($("gram").value)/7.8).toFixed(2);
-};
+        lblMonthlyQty:"月間想定調達量",
+        unitMonthlyQty:"g（Ghana pound 連動）",
+        hintMonthlyQty:"デフォルト 5,000g",
 
-$("pound").oninput=()=>{
-  $("gram").value=(Number($("pound").value)*7.8).toFixed(0);
-};
+        calc:"計算",
 
-/* ====== CALC ====== */
-$("calc").onclick=()=>{
+        lblTotalPay:"支払う総額（JPY）",
+        summaryBreakdown:"内訳（タップで開く）",
 
-  const price=Number($("price").value);
-  const pound=Number($("pound").value);
-  const gram=Number($("gram").value);
-  const fx=Number($("fx").value);
-  const jp=Number($("jp").value);
-  const cost=Number($("cost").value);
+        boxGhanaTitle:"ガーナ側（GHS）",
+        boxJapanTitle:"日本側（JPY）",
 
-  const buyGHS = price*pound;
-  const totalGHS = buyGHS + cost;
-  const totalJPY = totalGHS*fx;
+        kBuyGHS:"購入合計",
+        kOtherGHS:"その他コスト",
+        kGovFee:"政府関係手数料",
+        kShipIns:"輸出・保険",
+        kGhanaTotal:"ガーナ総コスト",
 
-  const sellJPY = gram*jp;
-  const profit = sellJPY-totalJPY;
-  const rate = totalJPY===0 ? 0 : (profit/totalJPY*100);
+        kCif:"CIF（円換算）",
+        kVat:"消費税",
+        kRefine:"精錬費",
+        kJapanExtra:"日本追加コスト",
+        kJapanTotal:"日本総コスト",
 
-  $("total").textContent = totalJPY.toLocaleString();
-  $("profit").textContent = profit.toLocaleString();
-  $("rate").textContent = rate.toFixed(2);
+        lblProfit:"最終利益（JPY）",
+        lblProfitRate:"利益率（%）",
+        lblSellRef:"日本24金 買取参考価格（JPY/g）",
 
-  $("detail").innerHTML =
-    "購入額(GHS): "+buyGHS.toLocaleString()+"<br>"+
-    "総コスト(GHS): "+totalGHS.toLocaleString()+"<br>"+
-    "日本売却額(JPY): "+sellJPY.toLocaleString();
+        lblPayback:"投資回収見込み",
 
-};
+        pwTitle:"パスワード",
+        pwLabel:"パスワードを入力してください",
+        pwHint:"正しいパスワードで設定画面を開きます。",
 
-/* ====== PDF ====== */
-$("btnPdf").onclick=()=>window.print();
+        setTitle:"設定",
+        setSave:"保存",
 
-</script>
+        pwChangeTitle:"パスワード変更",
+        pwCur:"現在パスワード",
+        pwNew:"新しいパスワード",
+        pwNew2:"新しいパスワード（確認）",
+        pwChangeBtn:"変更して保存",
 
+        pdfConfirm:"PDFに出力します。\nOK：このタブだけ\nキャンセル：両方（通常＋特別）",
+        bothTabsTitle:"比較（通常 / 特別調達枠）"
+      },
+
+      en: {
+        loginTitle:"Login",
+        loginSub:"Gold Calculator (Ghana → Japan)",
+        loginLabel:"Login ID",
+        loginHint:"Enter ID to continue.",
+        loginBtn:"Login",
+        subtitle:"Ghana → Japan / Profit Calculator",
+        inputTitle:"Inputs",
+        resultTitle:"Results",
+        tabNormal:"Normal",
+        tabSpecial:"Special Procurement",
+        pdf:"PDF",
+        settings:"Settings",
+        logout:"Logout",
+
+        lblPrice:"Purchase Price",
+        unitPrice:"GHS / Ghana pound",
+        hintPrice:"per 1 Ghana pound",
+
+        lblOtherGHS:"Other Cost",
+        unitOtherGHS:"GHS",
+        hintOtherGHS:"Storage etc. (Ghana side)",
+
+        lblPound:"Weight",
+        unitPound:"Ghana pound",
+        lblGram:"Weight",
+        unitGram:"g",
+        hintLink1:"Linked with g",
+        hintLink2:"Linked with Ghana pound",
+
+        lblFx:"FX Rate",
+        unitFx:"1 GHS → JPY",
+        hintFx:"Used for JPY conversion",
+
+        lblJpPrice:"Japan 24K Reference Buy Price",
+        unitJpPrice:"JPY / g",
+        hintJp:"e.g. 26,000",
+
+        lblSponsorFee:"Special Procurement Cost",
+        unitSponsorFee:"JPY",
+        hintSponsorFee:"e.g. 15,000,000 (≈ 100,000 USD)",
+
+        lblMonthlyQty:"Assumed Monthly Procurement",
+        unitMonthlyQty:"g (linked to Ghana pound)",
+        hintMonthlyQty:"Default 5,000g",
+
+        calc:"Calculate",
+
+        lblTotalPay:"Total Payment (JPY)",
+        summaryBreakdown:"Breakdown (tap to open)",
+
+        boxGhanaTitle:"Ghana Side (GHS)",
+        boxJapanTitle:"Japan Side (JPY)",
+
+        kBuyGHS:"Purchase Total",
+        kOtherGHS:"Other Cost",
+        kGovFee:"Gov. Fee",
+        kShipIns:"Export + Insurance",
+        kGhanaTotal:"Ghana Total Cost",
+
+        kCif:"CIF (JPY)",
+        kVat:"Consumption Tax",
+        kRefine:"Refining Cost",
+        kJapanExtra:"Japan Extra Cost",
+        kJapanTotal:"Japan Total Cost",
+
+        lblProfit:"Final Profit (JPY)",
+        lblProfitRate:"Profit Rate (%)",
+        lblSellRef:"Japan 24K Reference Buy Price (JPY/g)",
+
+        lblPayback:"Payback Estimate",
+
+        pwTitle:"Password",
+        pwLabel:"Enter password",
+        pwHint:"Correct password opens settings.",
+
+        setTitle:"Settings",
+        setSave:"Save",
+
+        pwChangeTitle:"Change Password",
+        pwCur:"Current Password",
+        pwNew:"New Password",
+        pwNew2:"Confirm New Password",
+        pwChangeBtn:"Save New Password",
+
+        pdfConfirm:"Export to PDF.\nOK: current tab\nCancel: both tabs (Normal + Special)",
+        bothTabsTitle:"Comparison (Normal / Special)"
+      }
+    };
+
+    // ===== Helpers =====
+    const $ = (id)=>document.getElementById(id);
+    const nf0 = (n)=>isFinite(n) ? Math.round(n).toLocaleString() : "—";
+    const nf2 = (n)=>isFinite(n) ? Number(n).toFixed(2) : "—";
+    const clampNum = (v, def=0)=>{
+      const n = Number(String(v).replace(/,/g,""));
+      return isFinite(n) ? n : def;
+    };
+
+    function loadPassword(){
+      const p = localStorage.getItem(K.pw);
+      return p ? p : "1111";
+    }
+    function savePassword(p){
+      localStorage.setItem(K.pw, p);
+    }
+
+    function loadSettings(){
+      const raw = localStorage.getItem(K.settings);
+      if(!raw) return {...DEFAULTS};
+      try{
+        const obj = JSON.parse(raw);
+        return {...DEFAULTS, ...obj};
+      }catch(e){
+        return {...DEFAULTS};
+      }
+    }
+    function saveSettings(obj){
+      localStorage.setItem(K.settings, JSON.stringify(obj));
+    }
+
+    function setLangUI(lang){
+      const tr = T[lang];
+
+      // Login
+      $("loginTitle").textContent = tr.loginTitle;
+      $("loginSub").textContent   = tr.loginSub;
+      $("loginLabel").textContent = tr.loginLabel;
+      $("loginHint").textContent  = tr.loginHint;
+      $("loginBtn").textContent   = tr.loginBtn;
+
+      // Header
+      $("subtitle").textContent = tr.subtitle;
+      $("btnPdf").textContent   = tr.pdf;
+      $("settingsBtn").textContent = tr.settings;
+      $("logoutBtn").textContent = tr.logout;
+
+      // Tabs
+      $("tabNormal").textContent = tr.tabNormal;
+      $("tabSpecial").textContent = tr.tabSpecial;
+
+      // Inputs
+      $("inputTitle").textContent = tr.inputTitle;
+
+      $("lblPrice").textContent = tr.lblPrice;
+      $("unitPrice").textContent = tr.unitPrice;
+      $("hintPrice").textContent = tr.hintPrice;
+
+      $("lblOtherGHS").textContent = tr.lblOtherGHS;
+      $("unitOtherGHS").textContent = tr.unitOtherGHS;
+      $("hintOtherGHS").textContent = tr.hintOtherGHS;
+
+      $("lblPound").textContent = tr.lblPound;
+      $("unitPound").textContent = tr.unitPound;
+      $("lblGram").textContent = tr.lblGram;
+      $("unitGram").textContent = tr.unitGram;
+      $("hintLink1").textContent = tr.hintLink1;
+      $("hintLink2").textContent = tr.hintLink2;
+
+      $("lblFx").textContent = tr.lblFx;
+      $("unitFx").textContent = tr.unitFx;
+      $("hintFx").textContent = tr.hintFx;
+
+      $("lblJpPrice").textContent = tr.lblJpPrice;
+      $("unitJpPrice").textContent = tr.unitJpPrice;
+      $("hintJp").textContent = tr.hintJp;
+
+      $("lblSponsorFee").textContent = tr.lblSponsorFee;
+      $("unitSponsorFee").textContent = tr.unitSponsorFee;
+      $("hintSponsorFee").textContent = tr.hintSponsorFee;
+
+      $("lblMonthlyQty").textContent = tr.lblMonthlyQty;
+      $("unitMonthlyQty").textContent = tr.unitMonthlyQty;
+      $("hintMonthlyQty").textContent = tr.hintMonthlyQty;
+
+      $("btnCalc").textContent = tr.calc;
+
+      // Results
+      $("resultTitle").textContent = tr.resultTitle;
+      $("lblTotalPay").textContent = tr.lblTotalPay;
+      $("summaryBreakdown").textContent = tr.summaryBreakdown;
+
+      $("boxGhanaTitle").textContent = tr.boxGhanaTitle;
+      $("boxJapanTitle").textContent = tr.boxJapanTitle;
+
+      $("kBuyGHS").textContent = tr.kBuyGHS;
+      $("kOtherGHS").textContent = tr.kOtherGHS;
+      $("kGovFee").textContent = tr.kGovFee;
+      $("kShipIns").textContent = tr.kShipIns;
+      $("kGhanaTotal").textContent = tr.kGhanaTotal;
+
+      $("kCif").textContent = tr.kCif;
+      $("kVat").textContent = tr.kVat;
+      $("kRefine").textContent = tr.kRefine;
+      $("kJapanExtra").textContent = tr.kJapanExtra;
+      $("kJapanTotal").textContent = tr.kJapanTotal;
+
+      $("lblProfit").textContent = tr.lblProfit;
+      $("lblProfitRate").textContent = tr.lblProfitRate;
+      $("lblSellRef").textContent = tr.lblSellRef;
+      $("lblPayback").textContent = tr.lblPayback;
+
+      // Password modal
+      $("pwTitle").textContent = tr.pwTitle;
+      $("pwLabel").textContent = tr.pwLabel;
+      $("pwHint").textContent  = tr.pwHint;
+
+      // Settings
+      $("setTitle").textContent = tr.setTitle;
+      $("setSave").textContent  = tr.setSave;
+      $("pwChangeTitle").textContent = tr.pwChangeTitle;
+      $("pwChangeBtn").textContent = tr.pwChangeBtn;
+    }
+
+    // ===== App state =====
+    let lang = "ja";
+    let mode = "normal"; // "normal" | "special"
+    let s = loadSettings();
+
+    // 8-tap settings reveal
+    let tapCount = 0;
+    let tapTimer = null;
+
+    function resetTap(){
+      tapCount = 0;
+      if(tapTimer){ clearTimeout(tapTimer); tapTimer=null; }
+    }
+
+    function showSettingsButton(show){
+      $("settingsBtn").style.display = show ? "inline-flex" : "none";
+    }
+
+    function setMode(next){
+      mode = next;
+
+      $("tabNormal").classList.toggle("active", mode==="normal");
+      $("tabSpecial").classList.toggle("active", mode==="special");
+
+      // background changes to make tab switching obvious
+      document.body.style.background = (mode==="special") ? "var(--bg-special)" : "var(--bg-normal)";
+
+      // special-only boxes
+      $("specialSponsorBox").style.display = (mode==="special") ? "block" : "none";
+      $("specialMonthlyBox").style.display = (mode==="special") ? "block" : "none";
+      $("specialExtraInfo").style.display  = (mode==="special") ? "block" : "none";
+
+      // Mode note
+      $("modeNote").textContent = (mode==="special")
+        ? (lang==="ja"
+            ? "※特別調達枠：見込み利益は想定稼働率を反映して表示します。"
+            : "Note: Special mode shows expected profit adjusted by utilization rate.")
+        : "";
+    }
+
+    function setLang(next){
+      lang = next;
+      $("btnJa").classList.toggle("active", lang==="ja");
+      $("btnEn").classList.toggle("active", lang==="en");
+      setLangUI(lang);
+      setMode(mode); // refresh notes
+    }
+
+    // ===== Linked weight inputs =====
+    function syncFromGram(){
+      const g = clampNum($("inGram").value, 0);
+      const pound = s.poundToGram ? (g / s.poundToGram) : 0;
+      $("inPound").value = (isFinite(pound) ? pound.toFixed(2) : "0");
+    }
+    function syncFromPound(){
+      const p = clampNum($("inPound").value, 0);
+      const g = p * (s.poundToGram || 0);
+      $("inGram").value = (isFinite(g) ? Math.round(g).toString() : "0");
+    }
+
+    // ===== Core calculation =====
+    function computeOneShipment(inputs){
+      const pricePerPound = inputs.pricePerPound;  // GHS / Ghana pound
+      const pound = inputs.pound;                  // Ghana pound
+      const gram  = inputs.gram;                   // g
+      const fx    = inputs.fx;                     // 1 GHS -> JPY
+      const otherGHS = inputs.otherGHS;            // GHS
+      const jpPricePerG = inputs.jpPricePerG;      // JPY / g
+
+      const govtPct = s.govtPct/100;
+      const shipPct = s.shipPct/100;
+      const vatPct  = s.vatPct/100;
+      const refinePerG = s.refinePerG;             // JPY/g
+      const japanExtra = s.japanExtra;             // JPY
+
+      // Ghana purchase base
+      const buyGHS = pricePerPound * pound;
+      const baseGHS = buyGHS + otherGHS;
+
+      const govFeeGHS = baseGHS * govtPct;
+      const shipFeeGHS = baseGHS * shipPct;
+
+      const ghanaTotalGHS = baseGHS + govFeeGHS + shipFeeGHS;
+
+      // CIF in JPY (converted Ghana total)
+      const cifJPY = ghanaTotalGHS * fx;
+
+      // VAT on CIF
+      const vatJPY = cifJPY * vatPct;
+
+      // Refining (23K -> 24K) in JPY
+      const refineJPY = gram * refinePerG;
+
+      // Japan total
+      const japanTotalJPY = cifJPY + vatJPY + refineJPY + japanExtra;
+
+      // Grand total payment
+      const totalPayJPY = japanTotalJPY;
+
+      // Revenue at Japan buy reference price
+      const sellJPY = gram * jpPricePerG;
+
+      // Profit
+      const profitJPY = sellJPY - totalPayJPY;
+      const profitRate = (totalPayJPY===0) ? 0 : (profitJPY / totalPayJPY * 100);
+
+      // JPY per gram cost (for boss "1gあたりいくらで買える")
+      const costPerGramJPY = (gram>0) ? (totalPayJPY / gram) : 0;
+
+      return {
+        buyGHS, otherGHS, baseGHS,
+        govFeeGHS, shipFeeGHS, ghanaTotalGHS,
+        cifJPY, vatJPY, refineJPY, japanExtra, japanTotalJPY,
+        totalPayJPY,
+        sellJPY, profitJPY, profitRate,
+        costPerGramJPY
+      };
+    }
+
+    function renderResult(res){
+      $("outTotalPay").textContent = "¥" + nf0(res.totalPayJPY);
+
+      // Breakdown Ghana
+      $("vBuyGHS").textContent = nf0(res.buyGHS) + " GHS";
+      $("vOtherGHS").textContent = nf0(res.otherGHS) + " GHS";
+      $("vGovFee").textContent = nf0(res.govFeeGHS) + " GHS";
+      $("vShipIns").textContent = nf0(res.shipFeeGHS) + " GHS";
+      $("vGhanaTotal").textContent = nf0(res.ghanaTotalGHS) + " GHS";
+      $("ghanaToJpyNote").textContent = (lang==="ja")
+        ? `円換算（CIF）: ¥${nf0(res.cifJPY)}`
+        : `JPY conversion (CIF): ¥${nf0(res.cifJPY)}`;
+
+      // Breakdown Japan
+      $("vCif").textContent = "¥" + nf0(res.cifJPY);
+      $("vVat").textContent = "¥" + nf0(res.vatJPY);
+      $("vRefine").textContent = "¥" + nf0(res.refineJPY);
+      $("vJapanExtra").textContent = "¥" + nf0(res.japanExtra);
+      $("vJapanTotal").textContent = "¥" + nf0(res.japanTotalJPY);
+      $("japanTotalNote").textContent = (lang==="ja")
+        ? `1gあたり総コスト: ¥${nf0(res.costPerGramJPY)} / g`
+        : `Total cost per gram: ¥${nf0(res.costPerGramJPY)} / g`;
+
+      // Profit display (normal vs special)
+      let displayProfit = res.profitJPY;
+      let profitNote = "";
+
+      if(mode==="special"){
+        const util = s.utilPct/100;
+        displayProfit = res.profitJPY * util;
+
+        // small note near profit (right-below feel)
+        profitNote = (lang==="ja")
+          ? `※稼働率${nf2(s.utilPct)}%で算出`
+          : `*Calculated with utilization ${nf2(s.utilPct)}%`;
+      } else {
+        profitNote = "";
+      }
+
+      // Profit color rule
+      const profitEl = $("outProfit");
+      profitEl.textContent = "¥" + nf0(displayProfit);
+      profitEl.style.color = (displayProfit>=0) ? "var(--blueprofit)" : "var(--redloss)";
+
+      $("outProfitRate").textContent = nf2(res.profitRate) + "%";
+      $("outProfitRate").style.color = (displayProfit>=0) ? "var(--blueprofit)" : "var(--redloss)";
+
+      $("profitNoteSmall").textContent = profitNote;
+
+      $("outSellRef").textContent = "¥" + nf0(clampNum($("inJpPrice").value, s.jpPrice));
+
+      // Header pct labels
+      $("boxGhanaPct").textContent = (lang==="ja")
+        ? `政府 ${nf2(s.govtPct)}% / 輸送+保険 ${nf2(s.shipPct)}%`
+        : `Gov ${nf2(s.govtPct)}% / Ship+Ins ${nf2(s.shipPct)}%`;
+
+      $("boxJapanPct").textContent = (lang==="ja")
+        ? `消費税 ${nf2(s.vatPct)}% / 精錬 ${nf0(s.refinePerG)} JPY/g`
+        : `VAT ${nf2(s.vatPct)}% / Refining ${nf0(s.refinePerG)} JPY/g`;
+
+      // Special payback estimate
+      if(mode==="special"){
+        const sponsorFee = clampNum($("inSponsorFee").value, s.sponsorFee);
+        const expectedMonthlyProfit = displayProfit; // already utilization-adjusted
+        if(expectedMonthlyProfit > 0){
+          const m = Math.ceil(sponsorFee / expectedMonthlyProfit);
+          const maxM = m + 2; // “3〜5ヶ月”のように幅を持たせる
+          $("outPayback").textContent = (lang==="ja")
+            ? `約 ${m}〜${maxM} ヶ月`
+            : `Approx. ${m}–${maxM} months`;
+          $("outPaybackNote").textContent = (lang==="ja")
+            ? `※投資回収は見込みです（ガーナ事情により変動）`
+            : `*Estimated payback (may vary in Ghana).`;
+        } else {
+          $("outPayback").textContent = (lang==="ja") ? "回収不可（見込み利益が0以下）" : "Not recoverable (profit ≤ 0)";
+          $("outPaybackNote").textContent = "";
+        }
+      }
+    }
+
+    function calc(){
+      // read inputs
+      const price = clampNum($("inPrice").value, 0);
+      const pound = clampNum($("inPound").value, 0);
+      const gram  = clampNum($("inGram").value, 0);
+      const fx    = clampNum($("inFx").value, s.fx);
+      const otherGHS = clampNum($("inOtherGHS").value, 0);
+      const jpPricePerG = clampNum($("inJpPrice").value, s.jpPrice);
+
+      // safety: keep linked values consistent (if user typed one side)
+      // (don’t force here; we assume they’re already synced)
+
+      const res = computeOneShipment({
+        pricePerPound: price,
+        pound,
+        gram,
+        fx,
+        otherGHS,
+        jpPricePerG
+      });
+
+      renderResult(res);
+    }
+
+    // ===== PDF =====
+    function doPdf(){
+      const tr = T[lang];
+      const currentOnly = confirm(tr.pdfConfirm); // OK = current only, Cancel = both
+
+      // If both, temporarily render both tabs by cloning cards into a print container.
+      if(currentOnly){
+        window.print();
+        return;
+      }
+
+      // Both tabs print: create temp layout (simple)
+      const originalMode = mode;
+
+      // Create a temporary print-only container
+      const temp = document.createElement("div");
+      temp.id = "printBoth";
+      temp.style.display = "none";
+      document.body.appendChild(temp);
+
+      // Build a comparison header
+      const head = document.createElement("div");
+      head.className = "card";
+      head.innerHTML = `<h1 style="margin:0;font-size:28px;font-weight:950;color:var(--main);">${tr.bothTabsTitle}</h1>
+                        <div class="sub" style="margin-top:6px;">${$("subtitle").textContent}</div>`;
+      temp.appendChild(head);
+
+      // Helper to snapshot current page as HTML by switching mode + calc
+      function snapshot(label){
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<div style="font-size:18px;font-weight:950;color:var(--main);margin-bottom:10px;">${label}</div>
+                          <div style="font-size:14px;color:#6d7380;margin-bottom:8px;">
+                            ${lang==="ja" ? "前提入力：" : "Inputs: "}
+                            ${lang==="ja" ? "購入単価" : "Price"}=${$("inPrice").value} GHS/pound,
+                            ${lang==="ja" ? "重量" : "Weight"}=${$("inGram").value} g,
+                            FX=${$("inFx").value},
+                            ${lang==="ja" ? "日本参考" : "JP ref"}=${$("inJpPrice").value} JPY/g
+                          </div>
+                          <div style="display:grid;gap:8px;">
+                            <div style="border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;">
+                              <div style="font-weight:900;color:#394150;">${$("lblTotalPay").textContent}</div>
+                              <div style="font-size:26px;font-weight:950;color:var(--main);">${$("outTotalPay").textContent}</div>
+                            </div>
+                            <div style="border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;">
+                              <div style="font-weight:900;color:#394150;">${$("lblProfit").textContent}</div>
+                              <div style="font-size:26px;font-weight:950;color:${$("outProfit").style.color};">${$("outProfit").textContent}</div>
+                              <div style="font-size:12px;color:#8a909c;font-weight:800;">${$("profitNoteSmall").textContent || ""}</div>
+                            </div>
+                            <div style="border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;">
+                              <div style="font-weight:900;color:#394150;">${$("lblProfitRate").textContent}</div>
+                              <div style="font-size:22px;font-weight:950;color:${$("outProfitRate").style.color};">${$("outProfitRate").textContent}</div>
+                            </div>
+                          </div>
+                          <div style="margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fbfbfd;">
+                            <div style="font-weight:950;color:var(--main);margin-bottom:8px;">${$("summaryBreakdown").textContent}</div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                              <div style="border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;">
+                                <div style="font-weight:950;color:var(--main);margin-bottom:6px;">${$("boxGhanaTitle").textContent}</div>
+                                <div style="font-size:12px;color:#8a909c;font-weight:800;margin-bottom:8px;">${$("boxGhanaPct").textContent}</div>
+                                <div style="font-size:13px;font-weight:850;display:flex;justify-content:space-between;"><span>${$("kGhanaTotal").textContent}</span><span>${$("vGhanaTotal").textContent}</span></div>
+                              </div>
+                              <div style="border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;">
+                                <div style="font-weight:950;color:var(--main);margin-bottom:6px;">${$("boxJapanTitle").textContent}</div>
+                                <div style="font-size:12px;color:#8a909c;font-weight:800;margin-bottom:8px;">${$("boxJapanPct").textContent}</div>
+                                <div style="font-size:13px;font-weight:850;display:flex;justify-content:space-between;"><span>${$("kJapanTotal").textContent}</span><span>${$("vJapanTotal").textContent}</span></div>
+                              </div>
+                            </div>
+                          </div>`;
+        return card;
+      }
+
+      // Normal snapshot
+      setMode("normal");
+      calc();
+      temp.appendChild(snapshot(T[lang].tabNormal));
+
+      // Special snapshot
+      setMode("special");
+      calc();
+      temp.appendChild(snapshot(T[lang].tabSpecial));
+
+      // Make visible only for print
+      temp.style.display = "block";
+      window.print();
+      temp.remove();
+
+      // Restore
+      setMode(originalMode);
+      calc();
+    }
+
+    // ===== Settings modal logic =====
+    function openPwModal(){
+      $("pwMsg").textContent = "";
+      $("pwInput").value = "";
+      $("pwOverlay").style.display = "flex";
+      setTimeout(()=>{ $("pwInput").focus(); }, 50);
+    }
+    function closePwModal(){
+      $("pwOverlay").style.display = "none";
+    }
+    function openSettingsModal(){
+      // fill fields from current settings
+      $("sPoundToGram").value = s.poundToGram;
+      $("sFx").value          = s.fx;
+      $("sGovPct").value      = s.govtPct;
+      $("sShipPct").value     = s.shipPct;
+      $("sVatPct").value      = s.vatPct;
+      $("sRefinePerG").value  = s.refinePerG;
+      $("sJapanExtra").value  = s.japanExtra;
+      $("sJpPrice").value     = s.jpPrice;
+      $("sSponsorFee").value  = s.sponsorFee;
+      $("sUtilPct").value     = s.utilPct;
+
+      $("setMsg").textContent = "";
+      $("pwChangeMsg").textContent = "";
+      $("pwCur").value = "";
+      $("pwNew").value = "";
+      $("pwNew2").value = "";
+
+      $("setOverlay").style.display = "flex";
+    }
+    function closeSettingsModal(){
+      $("setOverlay").style.display = "none";
+      // C案：閉じたら設定ボタンは消える
+      showSettingsButton(false);
+      resetTap();
+    }
+
+    function saveSettingsFromModal(){
+      const next = {
+        poundToGram: clampNum($("sPoundToGram").value, DEFAULTS.poundToGram),
+        fx: clampNum($("sFx").value, DEFAULTS.fx),
+        govtPct: clampNum($("sGovPct").value, DEFAULTS.govtPct),
+        shipPct: clampNum($("sShipPct").value, DEFAULTS.shipPct),
+        vatPct: clampNum($("sVatPct").value, DEFAULTS.vatPct),
+        refinePerG: clampNum($("sRefinePerG").value, DEFAULTS.refinePerG),
+        japanExtra: clampNum($("sJapanExtra").value, DEFAULTS.japanExtra),
+        jpPrice: clampNum($("sJpPrice").value, DEFAULTS.jpPrice),
+        sponsorFee: clampNum($("sSponsorFee").value, DEFAULTS.sponsorFee),
+        utilPct: clampNum($("sUtilPct").value, DEFAULTS.utilPct)
+      };
+
+      // basic sanity
+      if(next.poundToGram <= 0) next.poundToGram = DEFAULTS.poundToGram;
+      if(next.fx <= 0) next.fx = DEFAULTS.fx;
+      if(next.utilPct < 0) next.utilPct = 0;
+      if(next.utilPct > 100) next.utilPct = 100;
+
+      s = next;
+      saveSettings(s);
+
+      // reflect settings to inputs (fx/jp defaults)
+      $("inFx").value = s.fx;
+      $("inJpPrice").value = s.jpPrice;
+
+      // update linked weights based on new conversion if needed
+      syncFromGram();
+
+      $("setMsg").textContent = (lang==="ja") ? "保存しました。" : "Saved.";
+      $("setMsg").className = "noteSmall ok";
+
+      calc();
+    }
+
+    function changePassword(){
+      const cur = $("pwCur").value.trim();
+      const n1  = $("pwNew").value.trim();
+      const n2  = $("pwNew2").value.trim();
+
+      const real = loadPassword();
+
+      if(cur !== real){
+        $("pwChangeMsg").textContent = (lang==="ja") ? "現在パスワードが違います。" : "Current password is incorrect.";
+        $("pwChangeMsg").className = "noteSmall danger";
+        return;
+      }
+      if(!n1 || n1.length < 3){
+        $("pwChangeMsg").textContent = (lang==="ja") ? "新しいパスワードが短すぎます。" : "New password is too short.";
+        $("pwChangeMsg").className = "noteSmall danger";
+        return;
+      }
+      if(n1 !== n2){
+        $("pwChangeMsg").textContent = (lang==="ja") ? "確認用パスワードが一致しません。" : "Confirmation does not match.";
+        $("pwChangeMsg").className = "noteSmall danger";
+        return;
+      }
+
+      savePassword(n1);
+      $("pwChangeMsg").textContent = (lang==="ja") ? "変更しました。" : "Password updated.";
+      $("pwChangeMsg").className = "noteSmall ok";
+
+      // clear
+      $("pwCur").value = "";
+      $("pwNew").value = "";
+      $("pwNew2").value = "";
+    }
+
+    // ===== Login/session =====
+    function isSessionOk(){
+      return sessionStorage.getItem(K.session) === "1";
+    }
+    function setSessionOk(){
+      sessionStorage.setItem(K.session, "1");
+    }
+    function clearSession(){
+      sessionStorage.removeItem(K.session);
+    }
+    function showApp(){
+      $("login").style.display = "none";
+      $("app").style.display = "block";
+    }
+    function showLogin(){
+      $("app").style.display = "none";
+      $("login").style.display = "block";
+    }
+
+    function doLogin(){
+      const id = $("loginId").value.trim().toLowerCase();
+      if(id === "sawa"){
+        setSessionOk();
+        showApp();
+        calc();
+        $("loginId").value = "";
+      } else {
+        // keep it simple
+        alert(lang==="ja" ? "IDが違います。" : "Invalid ID.");
+      }
+    }
+
+    function doLogout(){
+      clearSession();
+      showLogin();
+    }
+
+    // ===== Init =====
+    function init(){
+      // load settings
+      s = loadSettings();
+
+      // default inputs
+      $("inPrice").value = 11000;
+      $("inOtherGHS").value = 0;
+
+      $("inGram").value = 5000;
+      $("inPound").value = (5000 / s.poundToGram).toFixed(2);
+
+      $("inFx").value = s.fx;
+      $("inJpPrice").value = s.jpPrice;
+
+      // special defaults
+      $("inSponsorFee").value = s.sponsorFee;
+      $("inMonthlyGram").value = 5000;
+
+      // language default ja
+      setLang("ja");
+
+      // mode default normal
+      setMode("normal");
+
+      // events
+      $("btnJa").addEventListener("click", ()=>setLang("ja"));
+      $("btnEn").addEventListener("click", ()=>setLang("en"));
+
+      $("tabNormal").addEventListener("click", ()=>{
+        setMode("normal");
+        calc();
+      });
+      $("tabSpecial").addEventListener("click", ()=>{
+        setMode("special");
+        calc();
+      });
+
+      $("btnCalc").addEventListener("click", calc);
+
+      $("inGram").addEventListener("input", ()=>{
+        syncFromGram();
+      });
+      $("inPound").addEventListener("input", ()=>{
+        syncFromPound();
+      });
+
+      // title 8-tap => reveal settings button
+      $("titleTap").addEventListener("click", ()=>{
+        tapCount++;
+        if(!tapTimer){
+          tapTimer = setTimeout(()=>{
+            resetTap();
+          }, 2500);
+        }
+        if(tapCount >= 8){
+          showSettingsButton(true);
+          resetTap();
+        }
+      });
+
+      $("settingsBtn").addEventListener("click", ()=>{
+        openPwModal();
+      });
+
+      // password modal
+      $("pwClose").addEventListener("click", closePwModal);
+      $("pwOk").addEventListener("click", ()=>{
+        const typed = $("pwInput").value.trim();
+        const real = loadPassword();
+        if(typed === real){
+          closePwModal();
+          openSettingsModal();
+        } else {
+          $("pwMsg").textContent = (lang==="ja") ? "パスワードが違います。" : "Wrong password.";
+          $("pwMsg").className = "noteSmall danger";
+        }
+      });
+
+      // settings modal
+      $("setClose").addEventListener("click", closeSettingsModal);
+      $("setSave").addEventListener("click", saveSettingsFromModal);
+      $("pwChangeBtn").addEventListener("click", changePassword);
+
+      // close settings by clicking overlay area
+      $("setOverlay").addEventListener("click", (e)=>{
+        if(e.target === $("setOverlay")) closeSettingsModal();
+      });
+      $("pwOverlay").addEventListener("click", (e)=>{
+        if(e.target === $("pwOverlay")) closePwModal();
+      });
+
+      // PDF
+      $("btnPdf").addEventListener("click", doPdf);
+
+      // Login
+      $("loginBtn").addEventListener("click", doLogin);
+      $("loginId").addEventListener("keydown", (e)=>{
+        if(e.key === "Enter") doLogin();
+      });
+
+      // Logout
+      $("logoutBtn").addEventListener("click", doLogout);
+
+      // Session check
+      if(isSessionOk()){
+        showApp();
+        calc();
+      } else {
+        showLogin();
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
