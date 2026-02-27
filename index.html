@@ -409,6 +409,24 @@
       .modalOverlay{ display:none !important; }
       .wrap{ max-width:980px; }
     }
+  /* iPhone: modal scroll fix */
+#pwOverlay, #setOverlay, #settingsModal, .modalOverlay{
+  overflow: hidden;
+}
+
+#pwOverlay, #setOverlay, #settingsModal, .modalOverlay{
+  max-height: 85vh;
+}
+
+#pwOverlay .modal, #pwOverlay .modalCard, #pwOverlay .modalContent,
+#setOverlay .modal, #setOverlay .modalCard, #setOverlay .modalContent,
+#settingsModal .modal, #settingsModal .modalCard, #settingsModal .modalContent,
+.modalOverlay .modal, .modalOverlay .modalCard, .modalOverlay .modalContent{
+  max-height: 85vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
   </style>
 </head>
 
